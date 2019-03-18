@@ -1,0 +1,66 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: echo-k8s
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: echo-k8s
+    spec:
+      containers:
+      - name: p001
+        image: registry.gitlab.com/ferris.eris/echo-k8s/p001:latest
+        ports:
+        - containerPort: 8081
+      - name: p002
+        image: registry.gitlab.com/ferris.eris/echo-k8s/p002:latest
+        ports:
+        - containerPort: 8082
+      - name: p003
+        image: registry.gitlab.com/ferris.eris/echo-k8s/p003:latest
+        ports:
+        - containerPort: 8083
+      - name: main
+        image: registry.gitlab.com/ferris.eris/echo-k8s/main:latest
+        ports:
+        - containerPort: 5000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: echo-k8s
+  labels:
+    app: echo-k8s
+spec:
+  ports:
+  - name: p001
+    protocol: TCP
+    port: 8081
+  - name: p002
+    protocol: TCP
+    port: 8082
+  - name: p003
+    protocol: TCP
+    port: 8083
+  - name: main
+    protocol: TCP
+    port: 5000
+  selector:
+    app: echo-k8s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  #name: echo-k8s-nodeport
+  name: echo-k8s-loadbalancer
+spec:
+  #type: NodePort
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: echo-k8s
